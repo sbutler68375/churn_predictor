@@ -1,0 +1,24 @@
+{
+  "churn_tenant_ids": [
+    "0aa66501-3e08-4f21-9cb5-277a89644d3a",
+    "1882e722-8483-4c7f-8012-4ee2bbf238b4",
+    "19f3c047-6379-4f2f-9eee-c98405e4f1aa",
+    "2449d388-4b43-4fc1-9743-8346fe7ac10c",
+    "72f770eb-edc2-47c8-8dbd-fbfe04cdcc3b",
+    "7a520b27-8bbf-4a0f-9bc3-ff17b79dc7b9",
+    "7ce691ff-895d-48bd-836a-4f5d54aecc7d",
+    "8caa22fa-c037-4aad-80a9-cb98e2daf78b",
+    "95215562-ff2f-4588-bf2e-97d306cc371b",
+    "9a65b4fc-c280-492e-aa2d-66cc3926e5ec",
+    "a61b7ecf-f3ba-4894-b5b0-ccb18156f237",
+    "a7312a1d-83b6-4bd5-8d6d-6c2bd92f3722",
+    "bdf061ec-1bd0-4c50-bc87-d9c96fe2ba8b",
+    "c4b2dc94-bdbc-4b99-93db-66b994c84969",
+    "c7d7e251-0069-49cf-a72a-3753d40b7968",
+    "c876d10e-41c5-42ce-9eeb-9c1f9042eee1",
+    "cf9f1fea-4d1e-450e-975e-d6e381a2baa3",
+    "d453ccad-7fb1-4feb-ae60-a3325b43e3a6",
+    "eb030580-c74f-4f3b-98e6-18fbf449cfb0",
+    "ef1c0044-ced2-46a2-8d93-78ecd9b96758"
+  ]
+}

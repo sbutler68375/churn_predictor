@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Summer Project Checklist</title>
+<style>
+  :root {
+    --paper: #eef0ea;
+    --paper-raised: #f6f7f2;
+    --ink: #1c2321;
+    --muted: #5b665f;
+    --line: #cfd4c7;
+    --accent: #2f6f8f;
+    --accent-ink: #17394a;
+    --accent-soft: #dbe6e6;
+    --done: #4c7a5d;
+    --radius: 10px;
+    --serif: "Palatino Linotype", Palatino, "URW Palladio L", Georgia, "Iowan Old Style", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #12161a;
+      --paper-raised: #181d21;
+      --ink: #e7e9e2;
+      --muted: #8b968f;
+      --line: #2a332f;
+      --accent: #6fb3cf;
+      --accent-ink: #cdeaf3;
+      --accent-soft: #1c3238;
+      --done: #7fbf98;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.55;
+    margin: 0;
+    padding: clamp(1.5rem, 4vw, 3.5rem) 1rem 5rem;
+  }
+
+  .page {
+    max-width: 46rem;
+    margin: 0 auto;
+  }
+
+  header.masthead {
+    margin-bottom: 2rem;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.6rem;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.9rem, 4vw, 2.5rem);
+    margin: 0 0 0.5rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.98rem;
+    max-width: 38rem;
+    margin: 0 0 1.4rem;
+  }
+
+  .pipeline {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    color: var(--muted);
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0.7rem 0.9rem;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .pipeline .arrow { color: var(--accent); }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 1.4rem;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 6px;
+    background: var(--accent-soft);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .progress-fill { transition: none; }
+  }
+
+  .progress-count {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .roadmap {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.4rem 1fr;
+    column-gap: 1.1rem;
+    margin-top: 2.6rem;
+  }
+  .roadmap::before {
+    content: "";
+    position: absolute;
+    left: 1.05rem;
+    top: 0.4rem;
+    bottom: 2.4rem;
+    width: 2px;
+    background: var(--line);
+  }
+
+  .week-node {
+    grid-column: 1;
+    display: flex;
+    justify-content: center;
+  }
+  .week-node .dot {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    background: var(--paper-raised);
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .week-card {
+    grid-column: 2;
+    margin-bottom: 2.4rem;
+    padding-bottom: 0.2rem;
+  }
+
+  .week-title {
+    font-family: var(--serif);
+    font-size: 1.32rem;
+    font-weight: 600;
+    margin: 0.1rem 0 0.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    text-wrap: balance;
+  }
+  .week-title .glyph {
+    font-size: 1.1rem;
+  }
+
+  .week-goal {
+    margin: 0 0 0.7rem;
+    color: var(--ink);
+  }
+  .week-goal .label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-right: 0.4em;
+  }
+
+  .stack-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.1rem;
+  }
+  .stack-chips span {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    padding: 0.22rem 0.55rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  ul.items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .item {
+    display: flex;
+    gap: 0.7rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+  }
+
+  .item input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.2rem;
+    border: 1.5px solid var(--muted);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+  }
+  .item input[type="checkbox"]:checked {
+    background: var(--done);
+    border-color: var(--done);
+  }
+  .item input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 0.28rem;
+    top: 0.05rem;
+    width: 0.28rem;
+    height: 0.55rem;
+    border: solid var(--paper);
+    border-width: 0 2px 2px 0;
+    transform: rotate(40deg);
+  }
+  .item input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .item .text {
+    flex: 1;
+  }
+  .item.done .text {
+    color: var(--muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--line);
+  }
+
+  .item strong {
+    font-weight: 600;
+  }
+
+  ul.sub {
+    margin: 0.5rem 0 0 0;
+    padding-left: 1.1rem;
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+  ul.sub li {
+    margin-bottom: 0.3rem;
+  }
+  ul.sub code, .item code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.05em 0.35em;
+  }
+
+  footer {
+    margin-top: 1rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-family: var(--mono);
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header class="masthead">
+    <span class="eyebrow">Self-directed build &middot; six weeks</span>
+    <h1>Summer Project Checklist</h1>
+    <p class="subtitle">A churn-prediction system built end to end: synthetic B2B data, SQL feature engineering, a trained model, an explainability layer, a dashboard, and a shipped API.</p>
+    <div class="pipeline" id="pipeline"></div>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-count" id="progressCount">0 / 0 done</div>
+    </div>
+  </header>
+
+  <div class="roadmap" id="roadmap"></div>
+
+  <footer>synced from Google Drive &middot; formatting only, content unchanged</footer>
+</div>
+
+<script>
+  const PIPELINE = ["PostgreSQL", "SQL features", "scikit-learn / XGBoost", "SHAP", "Streamlit", "FastAPI + Docker + CI"];
+
+  const WEEKS = [
+    {
+      glyph: "🛠️",
+      title: "Week 1: Infrastructure Setup & Relational Data Architecture",
+      goal: "Establish your local development ecosystem and build a realistic, production-style data generation engine.",
+      stack: ["PostgreSQL", "Python 3.11+", "Faker", "Psycopg2", "VS Code"],
+      items: [
+        {
+          text: '<strong>Provision Database Instance:</strong> Download and install PostgreSQL natively via the official website, or use Docker Desktop (free tier) to spin it up. Configure your local server instance to run on port <code>5432</code>, set a master password you will remember, and create a blank database named <code>customer_intelligence</code>.'
+        },
+        {
+          text: '<strong>Design Relational Schema:</strong> Open your database client (like pgAdmin, which comes free with PostgreSQL). Create a SQL file named <code>init.sql</code>. Write and execute the code to generate three specific tables:',
+          sub: [
+            '<code>tenants</code> (fields: <code>tenant_id</code> UUID primary key, <code>company_name</code> VARCHAR, <code>subscription_tier</code> VARCHAR, <code>contract_value</code> NUMERIC, <code>signup_date</code> DATE)',
+            '<code>users</code> (fields: <code>user_id</code> UUID primary key, <code>tenant_id</code> UUID foreign key referencing tenants, <code>email</code> VARCHAR, <code>created_at</code> TIMESTAMP)',
+            '<code>product_events</code> (fields: <code>event_id</code> BIGSERIAL primary key, <code>user_id</code> UUID foreign key referencing users, <code>timestamp</code> TIMESTAMP, <code>event_type</code> VARCHAR, <code>session_duration_secs</code> INT). Create explicit indexes on <code>tenant_id</code> and <code>timestamp</code> to ensure fast queries.'
+          ]
+        },
+        {
+          text: '<strong>Develop Synthetic Event Generator:</strong> In VS Code, create a Python script named <code>data_generator.py</code>. Use <code>pip install faker psycopg2-binary</code> to install your dependencies. Write a script that loops to generate 100 mock B2B companies (tenants) and roughly 500 total users distributed across those companies.'
+        },
+        {
+          text: '<strong>Inject Churn Logic via Code:</strong> Inside your loop in <code>data_generator.py</code>, write conditional logic that generates product events over the past 90 days. For 80% of the accounts, make their log frequency steady or increasing. For the remaining 20% (your target churn accounts), write a mathematical decay function that drastically reduces their daily <code>api_call</code> and <code>dashboard_view</code> counts over the final 30 days of the timeline, while doubling their <code>support_ticket_created</code> events.'
+        },
+        {
+          text: '<strong>Verify Ingestion:</strong> Run <code>python data_generator.py</code> from your terminal to stream the loops directly into your local database. Write a quick verification script to execute a count query: <code>SELECT COUNT(*) FROM product_events;</code>. Ensure you have successfully populated at least 100,000 clean records without any constraint failures.'
+        }
+      ]
+    },
+    {
+      glyph: "📊",
+      title: "Week 2: Advanced SQL Feature Engineering",
+      goal: "Perform all heavy data transformations directly inside the database layer using advanced SQL concepts, preparing an analytical view for machine learning.",
+      stack: ["PostgreSQL", "SQL", "pgAdmin / DBeaver"],
+      items: [
+        {
+          text: '<strong>Write In-Database Aggregations:</strong> In pgAdmin, open a new query tool window and create a file named <code>feature_engineering.sql</code>. Write a script that begins with a series of layered Common Table Expressions (CTEs) using the <code>WITH</code> keyword to structurally isolate user actions by tenant.'
+        },
+        {
+          text: '<strong>Implement Window Functions:</strong> Inside your CTEs, write advanced analytical window functions using the <code>OVER</code> and <code>PARTITION BY</code> clauses:',
+          sub: [
+            'Calculate rolling totals: Write <code>COUNT(event_id) OVER (PARTITION BY t.tenant_id ORDER BY pe.timestamp RANGE BETWEEN INTERVAL \'7 days\' PRECEDING AND CURRENT ROW)</code> to isolate individual 7-day and 30-day activity counts per account.',
+            'Calculate support ticket density: Aggregate the number of <code>support_ticket_created</code> logs occurring specifically over the last 30 days compared against the company\'s historical running average.'
+          ]
+        },
+        {
+          text: '<strong>Capture Engagement Velocity:</strong> Write a mathematical delta calculation into your final CTE query layer. Subtract the rolling 30-day average event volume from the rolling 90-day baseline volume, then divide by the 90-day baseline. This yields an "engagement velocity" coefficient that mathematically alerts the model if a company\'s usage is slowing down.'
+        },
+        {
+          text: '<strong>Create Final Production View:</strong> Compile your multi-layered window functions into a permanent, queryable database view by wrapping the script in a <code>CREATE VIEW v_ml_churn_features AS ...</code> statement. The final output layout must yield one row per <code>tenant_id</code>, all your newly calculated behavior features, and a binary <code>is_churned</code> label (1 if velocity dropped below a critical threshold, 0 otherwise).'
+        },
+        {
+          text: '<strong>Verify Data Types & Balance:</strong> Execute <code>SELECT * FROM v_ml_churn_features LIMIT 10;</code>. Visually verify that there are no empty fields (<code>NULL</code>s) and run a quick statistical aggregation query (<code>SELECT is_churned, COUNT(*) FROM v_ml_churn_features GROUP BY is_churned;</code>) to evaluate the exact target distribution of your dataset.'
+        }
+      ]
+    },
+    {
+      glyph: "🤖",
+      title: "Week 3: Model Pipeline Engineering & Training",
+      goal: "Build clean, production-standard training code and execute multi-model experimentation.",
+      stack: ["Python 3.11+", "Scikit-Learn", "XGBoost", "Pandas", "Git", "VS Code"],
+      items: [
+        {
+          text: '<strong>Establish Repository Architecture:</strong> Open your terminal, navigate to your root project directory, and initialize version control by typing <code>git init</code>. Build a professional directory structure manually by creating the following folders: <code>/src</code>, <code>/src/models</code>, <code>/config</code>, <code>/tests</code>, and <code>/notebooks</code> (reserve the notebooks folder strictly for scratchpad exploration). Create a <code>.gitignore</code> file to ensure database logs and environment credentials are never tracked.'
+        },
+        {
+          text: '<strong>Enforce Professional Code Standards:</strong> Inside VS Code, configure a strict code environment. Write explicit Python type hints for all function declarations (e.g., <code>def load_data(conn_string: str) -> pd.DataFrame:</code>). Use Python\'s built-in <code>logging</code> module to set up formal console logs (<code>logging.basicConfig(level=logging.INFO)</code>) instead of using casual <code>print()</code> statements.'
+        },
+        {
+          text: '<strong>Construct Data Ingestion Layer:</strong> Create a file named <code>src/data_loader.py</code>. Use <code>pip install SQLAlchemy</code> (free open-source SQL toolkit) alongside <code>psycopg2-binary</code>. Write a secure data fetching function that reads database connection strings directly from local environment variables, connects to your PostgreSQL instance, and reads the entire <code>v_ml_churn_features</code> view into a clean Pandas DataFrame.'
+        },
+        {
+          text: '<strong>Engineer a Scikit-Learn Pipeline:</strong> Create a script named <code>src/train.py</code>. Write a preprocessing function using Scikit-Learn\'s native <code>Pipeline</code> and <code>ColumnTransformer</code> modules. Automatically route numerical features through a <code>StandardScaler</code> and categorical variables through a <code>OneHotEncoder</code>. This ensures your transformations execute seamlessly and prevents data leakage between your training and validation splits.'
+        },
+        {
+          text: '<strong>Train Competitor Architectures:</strong> Use <code>pip install scikit-learn xgboost</code> to load your modeling tools. Inside <code>src/train.py</code>, split your data into an 80/20 train/test distribution. Write an execution loop that instantiates, fits, and trains three distinct algorithms against your data pipeline:',
+          sub: [
+            'Model 1: <code>LogisticRegression</code> (acts as your simple, linear statistical benchmark).',
+            'Model 2: <code>RandomForestClassifier</code> (captures complex, non-linear feature interactions).',
+            'Model 3: <code>XGBClassifier</code> (optimizes predictive performance via gradient-boosted trees).'
+          ]
+        }
+      ]
+    },
+    {
+      glyph: "🔬",
+      title: "Week 4: Statistical Evaluation & Model Explainability",
+      goal: "Evaluate performance using complex statistical classification metrics and build a local machine learning explainability engine.",
+      stack: ["Scikit-Learn Metrics", "SHAP", "Joblib", "Matplotlib"],
+      items: [
+        {
+          text: '<strong>Reject Pure Accuracy:</strong> Inside a new script named <code>src/evaluate.py</code>, import classification evaluation metrics from <code>sklearn.metrics</code>. Write code to compute Precision, Recall, F1-Score, and ROC AUC metrics against your validation test set for all three models.'
+        },
+        {
+          text: '<strong>Execute K-Fold Cross-Validation:</strong> Wrap your modeling process in a <code>StratifiedKFold</code> cross-validation loop with <code>n_splits=5</code>. Run this routine to record performance consistency across multiple distinct data splits, saving the mean scores and standard deviations to prove your system is mathematically stable and not overfit.'
+        },
+        {
+          text: '<strong>Document Business Metric Trade-offs:</strong> Create a markdown file in your root folder named <code>MODEL_METRICS.md</code>. Write an engineering analysis explaining why a B2B SaaS startup must prioritize high Recall over Precision. (Explain that alerting a Customer Success manager to a false positive costs a few minutes of outreach, whereas a false negative means accidentally letting a $100,000 enterprise contract quietly churn).'
+        },
+        {
+          text: '<strong>Integrate SHAP Engine:</strong> Run <code>pip install shap</code>. In <code>src/evaluate.py</code>, import the library and instantiate a SHAP <code>TreeExplainer</code> around your top-performing trained XGBoost model. Write a helper function to compute game-theoretic SHAP values across your validation dataset to quantify exactly how much each individual behavioral feature contributes to an account\'s churn risk score.'
+        },
+        {
+          text: '<strong>Serialize Model Artifacts:</strong> Run <code>pip install joblib</code>. Write an export command at the bottom of your training routine: <code>joblib.dump(best_pipeline, \'models/churn_model.joblib\')</code>. This saves your completely trained model, preprocessing pipeline, and weights into a single, light file asset. Save your global SHAP summary feature importance chart locally as a <code>.png</code> file inside an <code>/assets</code> directory.'
+        }
+      ]
+    },
+    {
+      glyph: "🖥️",
+      title: "Week 5: Streamlit Application Interface Development",
+      goal: "Build a professional B2B customer success dashboard to expose your predictions and explainability plots visually.",
+      stack: ["Streamlit", "Plotly Express", "Python", "Joblib", "PostgreSQL"],
+      items: [
+        {
+          text: '<strong>Configure Streamlit Layout:</strong> Create a new file at your root directory named <code>dashboard.py</code>. Run <code>pip install streamlit</code>. Write your initialization layout using <code>st.set_page_config(layout="wide")</code> to give yourself a professional, full-width workspace, and toggle the theme settings to dark mode.'
+        },
+        {
+          text: '<strong>Build Macro Business Metrics:</strong> At the top of <code>dashboard.py</code>, create a horizontal KPI dashboard block using <code>st.columns(3)</code> and the native <code>st.metric</code> card component. Write math logic that reads your data to compute and display:',
+          sub: [
+            '"Total ARR at Risk" (Summing the contract values of all companies whose model prediction probability exceeds 70%).',
+            '"Count of High-Risk Tenants" (Total count of companies flagged with high probability).',
+            '"Average Portfolio Health Score" (The inverted mean churn probability across all accounts).'
+          ]
+        },
+        {
+          text: '<strong>Build Data Science Diagnostics Page:</strong> Use <code>st.sidebar</code> to implement a multi-page navigation layout. Under a page named "Model Diagnostics", render the <code>.png</code> charts you saved during Week 4, alongside an interactive Plotly Express scatter plot displaying your model\'s ROC curve and confusion matrix values.'
+        },
+        {
+          text: '<strong>Build Tenant Deep-Dive Interface:</strong> Create a second navigation page named "Account Deep-Dive". Write a query function that pulls a list of company names from your database into an interactive dropdown selector via <code>st.selectbox("Select Enterprise Tenant Account:", company_list)</code>.'
+        },
+        {
+          text: '<strong>Render Local Account Explanations:</strong> When a user selects a company from the dropdown, write code to query that single company\'s live features from PostgreSQL and pass them through your loaded <code>churn_model.joblib</code> file. Display the exact calculated risk as an animated progress bar (<code>st.progress</code>). Below the progress bar, use Matplotlib to dynamically render a local SHAP force plot showing the exact behavioral metrics pushing that customer toward or away from a churn decision.'
+        }
+      ]
+    },
+    {
+      glyph: "📦",
+      title: "Week 6: FastAPI Wrapper, Containerization, & CI/CD Automation",
+      goal: "Decouple your system components, encapsulate them via Docker, write automated tests, and build an elite GitHub portfolio package.",
+      stack: ["FastAPI", "Pydantic", "Pytest", "Docker Desktop", "GitHub Actions"],
+      items: [
+        {
+          text: '<strong>Develop FastAPI Endpoint:</strong> Create a file named <code>src/app.py</code> and run <code>pip install fastapi uvicorn pydantic</code>. Instantiate a FastAPI app instance (<code>app = FastAPI()</code>). Write an asynchronous POST route handler: <code>@app.post("/predict")</code>. This allows the application tier to remain modular and decoupled from your dashboard frontend.'
+        },
+        {
+          text: '<strong>Write API Input Validation:</strong> Create a data validation class inheriting from Pydantic\'s <code>BaseModel</code>. Define all required input fields along with their strict data types (e.g., <code>api_calls_last_30d: int</code>, <code>velocity_score: float</code>). This ensures your API endpoints instantly reject malformed, corrupted, or missing JSON values with an HTTP 422 error code before they can hit your model. Write the route logic to return a clean JSON response payload: <code>{"tenant_id": id, "churn_probability": prob, "risk_tier": tier}</code>.'
+        },
+        {
+          text: '<strong>Write Automated Unit Tests:</strong> Run <code>pip install pytest</code>. Inside your <code>/tests</code> folder, create a test script named <code>test_api.py</code>. Write automated unit test functions targeting your FastAPI app using its built-in <code>TestClient</code>. Write tests to verify that valid data payloads yield a successful HTTP 200 response code and that invalid or empty payloads are successfully caught and blocked by your input validation rules. Run <code>pytest</code> locally in your terminal to ensure everything passes perfectly.'
+        },
+        {
+          text: '<strong>Containerize the Environment:</strong> In your root folder, create a file named <code>Dockerfile</code>. Write a clean script utilizing an official lightweight base image (<code>FROM python:3.11-slim</code>). Add commands to set a working directory, copy your local <code>requirements.txt</code> file, run <code>RUN pip install -r requirements.txt</code>, copy your application source code folders, and expose port <code>8000</code>. Configure the container startup execution command: <code>CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]</code>. Run <code>docker build -t churn-api .</code> in your terminal to compile the container locally.'
+        },
+        {
+          text: '<strong>Configure GitHub Actions CI Pipeline:</strong> Create a nested folder infrastructure at your root directory: <code>.github/workflows/</code>. Inside that folder, create a YAML workflow configuration file named <code>ci.yml</code>. Write a continuous integration workflow that triggers automatically on every code push to GitHub. Configure the workflow to spin up a free virtual Linux runner environment (<code>ubuntu-latest</code>), check out your codebase, install Python 3.11, install your project dependencies, and run your automated test suite using the <code>pytest</code> command. This ensures your code is validated automatically in the cloud on every update.'
+        },
+        {
+          text: '<strong>Author the Capstone README:</strong> Open a blank <code>README.md</code> file in your root folder. Spend significant time crafting an executive engineering report. Draw a clean text or markdown-based system architecture block diagram tracking data flow from PostgreSQL -> Python Feature Aggregation -> FastAPI Inference Endpoint -> Streamlit User Dashboard. Document clear step-by-step installation commands, directory map layouts, statistical performance model scores, and sample JSON input/output payloads so a technical hiring manager can verify your system maturity in seconds.'
+        }
+      ]
+    }
+  ];
+
+  const pipelineEl = document.getElementById("pipeline");
+  pipelineEl.innerHTML = PIPELINE.map(s => s.replace(/&/g, "&amp;")).join(' <span class="arrow">&rarr;</span> ');
+
+  const roadmapEl = document.getElementById("roadmap");
+  let itemCounter = 0;
+
+  WEEKS.forEach((week, wi) => {
+    const node = document.createElement("div");
+    node.className = "week-node";
+    node.innerHTML = `<div class="dot">W${wi + 1}</div>`;
+    roadmapEl.appendChild(node);
+
+    const card = document.createElement("div");
+    card.className = "week-card";
+
+    const stackHtml = week.stack.map(s => `<span>${s}</span>`).join("");
+    const itemsHtml = week.items.map(item => {
+      const id = "item-" + (itemCounter++);
+      const subHtml = item.sub
+        ? `<ul class="sub">${item.sub.map(s => `<li>${s}</li>`).join("")}</ul>`
+        : "";
+      return `<li class="item" data-id="${id}">
+        <input type="checkbox" id="${id}" aria-label="mark step complete">
+        <label class="text" for="${id}">${item.text}${subHtml}</label>
+      </li>`;
+    }).join("");
+
+    card.innerHTML = `
+      <h2 class="week-title"><span class="glyph">${week.glyph}</span>${week.title.replace(/^Week \d+:\s*/, "")}</h2>
+      <p class="week-goal"><span class="label">Goal</span>${week.goal}</p>
+      <div class="stack-chips">${stackHtml}</div>
+      <ul class="items">${itemsHtml}</ul>
+    `;
+    roadmapEl.appendChild(card);
+  });
+
+  const STORAGE_KEY = "summer-checklist-progress";
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) { saved = {}; }
+
+  const checkboxes = Array.from(document.querySelectorAll('.item input[type="checkbox"]'));
+
+  function updateProgress() {
+    const total = checkboxes.length;
+    const done = checkboxes.filter(cb => cb.checked).length;
+    document.getElementById("progressFill").style.width = (total ? (done / total) * 100 : 0) + "%";
+    document.getElementById("progressCount").textContent = `${done} / ${total} done`;
+  }
+
+  checkboxes.forEach(cb => {
+    const id = cb.id;
+    if (saved[id]) {
+      cb.checked = true;
+      cb.closest(".item").classList.add("done");
+    }
+    cb.addEventListener("change", () => {
+      cb.closest(".item").classList.toggle("done", cb.checked);
+      saved[cb.id] = cb.checked;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+      updateProgress();
+    });
+  });
+
+  updateProgress();
+</script>
+
+</body>
+</html>

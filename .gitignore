@@ -1,0 +1,19 @@
+# Secrets / local config -- never commit real or dev credentials
+DATABASE_INFO.txt
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Jupyter scratch
+.ipynb_checkpoints/
+
+# Editor / OS cruft
+.vscode/
+.DS_Store
+Thumbs.db
