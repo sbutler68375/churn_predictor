@@ -16,15 +16,12 @@ from sklearn.model_selection import StratifiedKFold, cross_validate
 from sklearn.pipeline import Pipeline
 
 from src.logging_config import get_logger
+from src.paths import MODEL_PATH, SHAP_CHART_PATH, TEST_PREDICTIONS_PATH
 from src.train import CATEGORICAL_FEATURES, MODELS, NUMERIC_FEATURES, RANDOM_STATE, build_preprocessing_pipeline
 
 log = get_logger(__name__)
 
 CV_SCORING = ["precision", "recall", "f1", "roc_auc"]
-PROJECT_ROOT = Path(__file__).parent.parent
-MODEL_PATH = PROJECT_ROOT / "models" / "churn_model.joblib"
-SHAP_CHART_PATH = PROJECT_ROOT / "assets" / "shap_feature_importance.png"
-TEST_PREDICTIONS_PATH = PROJECT_ROOT / "models" / "test_predictions.csv"
 
 
 def evaluate_model(

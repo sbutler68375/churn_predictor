@@ -9,19 +9,10 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from xgboost import XGBClassifier
 
+from src.features import CATEGORICAL_FEATURES, NUMERIC_FEATURES, TARGET
 from src.logging_config import get_logger
 
 log = get_logger(__name__)
-
-NUMERIC_FEATURES = [
-    "contract_value",
-    "events_last_7d",
-    "events_last_30d",
-    "events_last_90d",
-    "support_tickets_last_30d",
-]
-CATEGORICAL_FEATURES = ["subscription_tier"]
-TARGET = "is_churned"
 
 RANDOM_STATE = 42
 

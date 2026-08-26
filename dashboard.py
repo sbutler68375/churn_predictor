@@ -19,8 +19,9 @@ import streamlit as st
 from sklearn.metrics import auc, confusion_matrix, roc_curve
 
 from src.data_loader import load_churn_features
-from src.evaluate import MODEL_PATH, SHAP_CHART_PATH, TEST_PREDICTIONS_PATH, compute_shap_explanation
-from src.train import CATEGORICAL_FEATURES, NUMERIC_FEATURES
+from src.evaluate import compute_shap_explanation
+from src.features import CATEGORICAL_FEATURES, NUMERIC_FEATURES
+from src.paths import MODEL_PATH, SHAP_CHART_PATH, TEST_PREDICTIONS_PATH
 
 st.set_page_config(
     page_title="Customer Churn Prediction System",
