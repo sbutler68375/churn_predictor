@@ -19,7 +19,6 @@ NUMERIC_FEATURES = [
     "events_last_30d",
     "events_last_90d",
     "support_tickets_last_30d",
-    "engagement_velocity",
 ]
 CATEGORICAL_FEATURES = ["subscription_tier"]
 TARGET = "is_churned"
