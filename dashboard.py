@@ -9,6 +9,7 @@ Redesign: light theme, styled KPI cards, risk charts and an at-risk account
 table on the Executive Overview.
 """
 
+import base64
 from datetime import datetime
 from html import escape
 
@@ -28,24 +29,27 @@ from src.evaluate import compute_shap_explanation
 from src.features import CATEGORICAL_FEATURES, NUMERIC_FEATURES
 from src.paths import MODEL_PATH, TEST_PREDICTIONS_PATH
 
+LOGO_PATH = "assets/northstar_logo.svg"
+
 st.set_page_config(
-    page_title="Churn Intelligence",
-    page_icon="\U0001F4C9",
+    page_title="Northstar · Churn Intelligence",
+    page_icon=LOGO_PATH,
     layout="wide",
 )
 
-PAGES = ["Home", "Executive Overview", "Model Diagnostics", "Account Deep-Dive"]
+PAGES = ["Home", "Executive Overview", "Account Deep-Dive", "Model Diagnostics"]
 HIGH_RISK_THRESHOLD = 0.70
 MEDIUM_RISK_THRESHOLD = 0.30
 
 # Design tokens -- text inks, surfaces, and the reserved status colors used
 # for risk levels (always paired with a text label, never color alone).
-COMPANY = "Northpeak"  # fictional company this internal tool belongs to
+COMPANY = "Northstar"  # fictional company this internal tool belongs to
 INK = "#18181b"
 INK_2 = "#52525b"
 INK_3 = "#71717a"
 GRID = "#f0f0f1"
 BORDER = "#e4e4e7"
+CARD_BORDER = "#dcdce0"
 ACCENT = "#b91c1c"
 ACCENT_TINT = "#fdecec"
 CHARCOAL = "#1f1f23"
@@ -74,10 +78,8 @@ st.markdown(
         border-bottom: 3px solid {ACCENT};
     }}
     .brand {{ display: flex; align-items: center; gap: 11px; }}
-    .brand-mark {{
-        width: 32px; height: 32px; border-radius: 7px; background: {ACCENT};
-        color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 15px; flex: none;
-    }}
+    .brand-mark {{ width: 34px; height: 34px; flex: none; display: block; border-radius: 8px;
+        box-shadow: 0 0 0 1px rgba(255,255,255,.08); }}
     .brand-name {{ font-weight: 700; font-size: 15px; color: #ffffff; line-height: 1.15; }}
     .brand-sub {{ font-size: 11.5px; color: #a1a1aa; }}
     .st-key-app_header [role="radiogroup"] {{ gap: 4px; flex-wrap: wrap; }}
@@ -113,8 +115,8 @@ st.markdown(
     .kpi-grid {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }}
     @media (max-width: 900px) {{ .kpi-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }} }}
     .kpi {{
-        background: #fff; border: 1px solid {BORDER}; border-radius: 10px; padding: 16px 18px;
-        box-shadow: 0 1px 2px rgba(24,24,27,.04);
+        background: #fff; border: 1px solid {CARD_BORDER}; border-radius: 12px; padding: 16px 18px;
+        box-shadow: 0 1px 3px rgba(24,24,27,.05), 0 1px 2px rgba(24,24,27,.03);
     }}
     .kpi-label {{
         font-size: 11.5px; color: {INK_3}; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
@@ -127,9 +129,10 @@ st.markdown(
     .kpi-flag {{ display: inline-flex; align-items: center; gap: 6px; }}
     .dot {{ width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }}
 
-    /* Section cards (bordered st.container) */
-    [data-testid="stVerticalBlockBorderWrapper"] {{
-        background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgba(24,24,27,.04);
+    /* Section cards (keyed st.container via card()) */
+    [class*="st-key-card_"] {{
+        background: #fff; border: 1px solid {CARD_BORDER} !important; border-radius: 12px;
+        padding: 18px 20px 16px; box-shadow: 0 1px 3px rgba(24,24,27,.05), 0 1px 2px rgba(24,24,27,.03);
     }}
     .section-title {{ font-size: 15px; font-weight: 600; color: {INK}; margin: 0; }}
     .section-sub {{ font-size: 13px; color: {INK_2}; margin: 2px 0 10px; }}
@@ -147,6 +150,19 @@ st.markdown(
         display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
         border-radius: 999px; padding: 3px 10px; white-space: nowrap; font-variant-numeric: tabular-nums;
     }}
+
+    /* Home: numbered section headers */
+    .home-section {{
+        display: flex; align-items: flex-start; gap: 12px; margin: 30px 0 14px;
+        padding-bottom: 12px; border-bottom: 1px solid {CARD_BORDER};
+    }}
+    .home-section.first {{ margin-top: 6px; }}
+    .home-section-num {{
+        width: 28px; height: 28px; border-radius: 8px; background: {ACCENT}; color: #fff; flex: none;
+        display: grid; place-items: center; font-size: 13px; font-weight: 700; margin-top: 1px;
+    }}
+    .home-section-title {{ font-size: 18px; font-weight: 700; color: {INK}; letter-spacing: -.01em; line-height: 1.3; }}
+    .home-section-sub {{ font-size: 13.5px; color: {INK_2}; margin-top: 2px; }}
 
     /* Home: key findings */
     .finding-eyebrow {{
@@ -173,9 +189,34 @@ st.markdown(
     .queue-meta {{ font-size: 12.5px; color: {INK_3}; margin-top: 1px; }}
     .queue-arr {{ font-size: 14px; font-weight: 600; color: {INK}; font-variant-numeric: tabular-nums; text-align: right; }}
 
+    /* Deep-Dive: plain-English reasons */
+    .dd-summary {{ font-size: 15px; color: {INK}; line-height: 1.55; margin: 2px 0 14px; }}
+    .reason-head {{
+        font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+        display: flex; align-items: center; gap: 8px; margin: 4px 0 6px;
+    }}
+    .reason {{ padding: 11px 0; border-top: 1px solid {GRID}; }}
+    .reason-top {{ display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }}
+    .reason-name {{ font-size: 14px; font-weight: 600; color: {INK}; }}
+    .reason-pts {{ font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }}
+    .reason-text {{ font-size: 12.5px; color: {INK_2}; margin: 2px 0 7px; }}
+    .reason-track {{ height: 6px; border-radius: 3px; background: #f4f4f5; overflow: hidden; }}
+    .reason-fill {{ height: 100%; border-radius: 3px; }}
+    .reason-empty {{ font-size: 13px; color: {INK_3}; padding: 10px 0; border-top: 1px solid {GRID}; }}
+    .cmp-row {{
+        display: grid; grid-template-columns: minmax(0, 1.4fr) 1fr 1fr minmax(0, 1.3fr); gap: 12px;
+        align-items: center; padding: 10px 0; border-top: 1px solid {GRID}; font-size: 13.5px;
+    }}
+    .cmp-row.head {{ border-top: none; font-size: 11.5px; font-weight: 600; letter-spacing: .06em;
+        text-transform: uppercase; color: {INK_3}; padding-top: 0; }}
+    .cmp-row .num {{ text-align: right; font-variant-numeric: tabular-nums; color: {INK}; }}
+    .cmp-row .num.muted {{ color: {INK_2}; }}
+    .cmp-label {{ color: {INK}; font-weight: 500; }}
+    .cmp-diff {{ text-align: right; font-size: 12.5px; color: {INK_2}; }}
+
     /* Home: risk mix + status */
     .mix-bar {{ display: flex; height: 12px; border-radius: 6px; overflow: hidden; gap: 2px; margin: 4px 0 12px; }}
-    .mix-legend {{ display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: {INK_2}; }}
+    .mix-legend {{ display: flex; flex-direction: column; gap: 8px; padding-bottom: 8px; font-size: 13px; color: {INK_2}; }}
     .mix-legend div {{ display: flex; justify-content: space-between; gap: 12px; }}
     .mix-legend span {{ display: inline-flex; align-items: center; gap: 8px; }}
     .mix-legend b {{ color: {INK}; font-weight: 600; font-variant-numeric: tabular-nums; }}
@@ -256,6 +297,20 @@ def go_to(target: str) -> None:
     st.session_state["nav"] = target
 
 
+def card(key: str, **kwargs):
+    """A bordered white section box. The key gives the container a
+    st-key-card_* class the CSS above styles."""
+    return st.container(border=True, key=f"card_{key}", **kwargs)
+
+
+def home_section(number: int, title: str, subtitle: str, first: bool = False) -> None:
+    st.markdown(
+        f'<div class="home-section{" first" if first else ""}"><div class="home-section-num">{number}</div>'
+        f'<div><div class="home-section-title">{title}</div><div class="home-section-sub">{subtitle}</div></div></div>',
+        unsafe_allow_html=True,
+    )
+
+
 def page_header(title: str, subtitle: str) -> None:
     st.markdown(
         f'<div class="page-title">{title}</div><div class="page-sub">{subtitle}</div>',
@@ -284,12 +339,14 @@ def style_figure(fig: go.Figure, height: int) -> go.Figure:
 
 
 # ---------------------------------------------------------------- header
+with open(LOGO_PATH, "rb") as logo_file:
+    LOGO_URI = "data:image/svg+xml;base64," + base64.b64encode(logo_file.read()).decode()
 scored_at = get_live_predictions().attrs.get("scored_at", datetime.now())
 with st.container(key="app_header"):
     brand_col, nav_col, meta_col = st.columns([1.25, 2.9, 1.45], vertical_alignment="center")
     with brand_col:
         st.markdown(
-            f'<div class="brand"><div class="brand-mark">{COMPANY[0]}</div>'
+            f'<div class="brand"><img class="brand-mark" src="{LOGO_URI}" alt="{COMPANY} logo">'
             f'<div><div class="brand-name">{COMPANY}</div>'
             '<div class="brand-sub">Churn Intelligence</div></div></div>',
             unsafe_allow_html=True,
@@ -309,7 +366,7 @@ with st.container(key="app_header"):
 def finding_card(eyebrow: str, title: str, items: list[tuple[str, str]], target: str) -> None:
     """One 'key findings' card on Home: a few headline numbers summarizing
     another page, plus a button that opens that page."""
-    with st.container(border=True, height="stretch"):
+    with card(f"finding_{target.replace(' ', '_').replace('-', '_')}", height="stretch"):
         body = "".join(
             f'<div class="finding"><div class="finding-value">{value}</div>'
             f'<div class="finding-text">{text}</div></div>'
@@ -363,9 +420,10 @@ if page == "Home":
     greeting = "Good morning" if now.hour < 12 else "Good afternoon" if now.hour < 17 else "Good evening"
     page_header(
         greeting,
-        f"Retention briefing for {now:%A, %B} {now.day}. "
-        "A summary of today's findings across the portfolio, the model and the accounts that need outreach.",
+        f"Here's the retention picture for {now:%A, %B} {now.day}: a quick briefing, what the analysis found, "
+        "and the accounts to act on today.",
     )
+    home_section(1, "Briefing", "Where the portfolio stands right now", first=True)
 
     st.markdown(
         f"""
@@ -396,7 +454,7 @@ if page == "Home":
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div class="section-label">Key findings</div>', unsafe_allow_html=True)
+    home_section(2, "Key findings", "What the analysis shows, summarized from each page of the tool")
     f1, f2, f3 = st.columns(3, gap="medium")
     with f1:
         finding_card(
@@ -441,11 +499,11 @@ if page == "Home":
             "Model Diagnostics",
         )
 
-    st.markdown('<div class="section-label" style="margin-top:22px">Action items</div>', unsafe_allow_html=True)
+    home_section(3, "Action items", "Which accounts to contact first, and the state of the data behind these numbers")
     left, right = st.columns([1.65, 1], gap="medium")
 
     with left:
-        with st.container(border=True):
+        with card("c2"):
             section_heading(
                 "Priority outreach",
                 "High-risk accounts ranked by contract value: the renewals to protect first",
@@ -478,7 +536,7 @@ if page == "Home":
             )
 
     with right:
-        with st.container(border=True):
+        with card("c3"):
             section_heading("Risk mix", "Accounts by predicted churn level")
             segments = "".join(
                 f'<div style="flex:{max(int(n), 0)};background:{RISK_COLORS[lvl]}"></div>'
@@ -494,7 +552,7 @@ if page == "Home":
                 unsafe_allow_html=True,
             )
 
-        with st.container(border=True):
+        with card("c4"):
             section_heading("System status")
             ok = f'<span class="dot" style="background:{OK_GREEN}"></span>'
             st.markdown(
@@ -561,7 +619,7 @@ elif page == "Executive Overview":
     left, right = st.columns([1.15, 1], gap="medium")
 
     with left:
-        with st.container(border=True):
+        with card("c5"):
             section_heading("ARR by risk level", "Contract value grouped by predicted churn probability")
             levels = ["High", "Medium", "Low"]
             by_level = (
@@ -595,7 +653,7 @@ elif page == "Executive Overview":
             st.plotly_chart(style_figure(fig, 260), use_container_width=True, config={"displayModeBar": False})
 
     with right:
-        with st.container(border=True):
+        with card("c6"):
             section_heading("High-risk accounts by plan", "Share of each subscription tier above the risk threshold")
             tiers = ["Enterprise", "Pro", "Starter"]
             by_tier = (
@@ -640,7 +698,7 @@ elif page == "Executive Overview":
             fig.update_yaxes(autorange="reversed", showgrid=False, ticksuffix="  ")
             st.plotly_chart(style_figure(fig, 260), use_container_width=True, config={"displayModeBar": False})
 
-    with st.container(border=True):
+    with card("c7"):
         section_heading(
             "Accounts needing attention",
             "High-risk accounts ranked by contract value: the biggest renewals to protect first",
@@ -685,7 +743,7 @@ elif page == "Executive Overview":
                 "Support tickets (30d)": st.column_config.NumberColumn(format="%d"),
             },
         )
-        st.caption("Open **Account Deep-Dive** in the sidebar to see what's driving any account's score.")
+        st.caption("Open **Account Deep-Dive** from the header to see what's driving any account's score.")
 
     st.markdown(
         f'<div class="fine-print">Risk levels: High &gt; {HIGH_RISK_THRESHOLD:.0%}, '
@@ -700,7 +758,7 @@ elif page == "Model Diagnostics":
         "Evaluation of the Random Forest model on the held-out test set",
     )
 
-    with st.container(border=True):
+    with card("c8"):
         section_heading(
             "Global feature importance (SHAP)",
             "Mean absolute SHAP value per feature across all live accounts: how much each one moves the score",
@@ -742,7 +800,7 @@ elif page == "Model Diagnostics":
     roc_col, cm_col = st.columns(2, gap="medium")
 
     with roc_col:
-        with st.container(border=True):
+        with card("c9"):
             fpr, tpr, _ = roc_curve(y_true, y_proba)
             roc_auc = auc(fpr, tpr)
             section_heading("ROC curve", f"AUC = {roc_auc:.2f}")
@@ -765,7 +823,7 @@ elif page == "Model Diagnostics":
             st.plotly_chart(style_figure(fig, 360), use_container_width=True, config={"displayModeBar": False})
 
     with cm_col:
-        with st.container(border=True):
+        with card("c10"):
             section_heading("Confusion matrix", "Predicted vs. actual churn outcome")
             cm = confusion_matrix(y_true, y_pred)
             labels = ["Healthy", "At-risk"]
@@ -817,7 +875,8 @@ elif page == "Account Deep-Dive":
     labels = data.apply(make_label, axis=1)
     label_to_position = dict(zip(labels, data.index))
 
-    selected_label = st.selectbox("Account", sorted(labels))
+    with card("account_picker"):
+        selected_label = st.selectbox("Account", sorted(labels))
 
     if selected_label:
         position = label_to_position[selected_label]
@@ -853,11 +912,131 @@ elif page == "Account Deep-Dive":
             unsafe_allow_html=True,
         )
 
-        with st.container(border=True):
+        # ---- plain-English explanation (for account managers) ----
+        # SHAP values are in probability units; x100 turns them into "points"
+        # of churn risk, which reads naturally next to a 0-100% score.
+        row_shap = pd.Series(explanation[position].values, index=explanation.feature_names)
+        tier_cols = [c for c in row_shap.index if c.startswith("subscription tier")]
+        points = row_shap.drop(tier_cols)
+        points["plan"] = row_shap[tier_cols].sum()  # one "plan" factor instead of three 0/1 flags
+        points = points * 100
+        baseline = float(explanation[position].base_values)
+        typical = data[NUMERIC_FEATURES].median()
+
+        def fmt_metric(col: str, value: float) -> str:
+            return money(value) if col == "contract_value" else f"{value:,.0f}"
+
+        def compare(feature: str) -> str:
+            if feature == "plan":
+                return f"On the {selected_row['subscription_tier']} plan"
+            col = feature.replace(" ", "_")
+            value, norm = selected_row[col], typical[col]
+            change = value / norm - 1 if norm else 0
+            if abs(change) < 0.1:
+                return f"{fmt_metric(col, value)}, about the same as a typical account ({fmt_metric(col, norm)})"
+            if change >= 1:
+                return f"{fmt_metric(col, value)}, {value / norm:.1f}× a typical account ({fmt_metric(col, norm)})"
+            direction = "above" if change > 0 else "below"
+            return f"{fmt_metric(col, value)}, {abs(change):.0%} {direction} a typical account ({fmt_metric(col, norm)})"
+
+        friendly = {
+            "contract value": "Contract size",
+            "events last 7d": "Product usage, last 7 days",
+            "events last 30d": "Product usage, last 30 days",
+            "events last 90d": "Product usage, last 90 days",
+            "support tickets last 30d": "Support tickets, last 30 days",
+            "plan": "Subscription plan",
+        }
+        scale = max(points.abs().max(), 1)
+
+        def reason_rows(series: pd.Series, color: str, sign: str) -> str:
+            if series.empty:
+                return '<div class="reason-empty">Nothing significant.</div>'
+            return "".join(
+                '<div class="reason"><div class="reason-top">'
+                f'<span class="reason-name">{friendly[f]}</span>'
+                f'<span class="reason-pts" style="color:{color}">{sign}{abs(v):.0f} pts</span></div>'
+                f'<div class="reason-text">{compare(f)}</div>'
+                '<div class="reason-track"><div class="reason-fill" '
+                f'style="width:{abs(v) / scale * 100:.0f}%;background:{color}"></div></div></div>'
+                for f, v in series.items()
+            )
+
+        raising = points[points >= 1].sort_values(ascending=False)
+        lowering = points[points <= -1].sort_values()
+        top = points.abs().idxmax()
+        top_dir = "raising" if points[top] > 0 else "lowering"
+        name = escape(str(selected_row["company_name"]))
+
+        with card("dd_reasons"):
             section_heading(
-                "What's driving this score",
-                "Each row shows how much one behavior pushed this account's risk up (red) or "
-                "down (blue) from the average baseline, ending at its predicted score.",
+                "Why this account scored this way",
+                "How much each factor moved the risk score, in percentage points, compared with an average account",
+            )
+            st.markdown(
+                f'<div class="dd-summary"><b>{name}</b> has a <b>{risk:.0%}</b> predicted chance of churning '
+                f"({level.lower()} risk), compared with <b>{baseline:.0%}</b> for an average account. "
+                f"The biggest factor is <b>{friendly[top].lower()}</b>, {top_dir} the score by "
+                f"{abs(points[top]):.0f} points.</div>",
+                unsafe_allow_html=True,
+            )
+            up_col, down_col = st.columns(2, gap="large")
+            with up_col:
+                st.markdown(
+                    f'<div class="reason-head" style="color:{ACCENT}">&#9650; Raising risk</div>'
+                    + reason_rows(raising, ACCENT, "+"),
+                    unsafe_allow_html=True,
+                )
+            with down_col:
+                st.markdown(
+                    f'<div class="reason-head" style="color:{INK_2}">&#9660; Lowering risk</div>'
+                    + reason_rows(lowering, INK_3, "&minus;"),
+                    unsafe_allow_html=True,
+                )
+
+        with card("dd_compare"):
+            section_heading(
+                "Compared with a typical account",
+                f"This account's numbers next to the median of all {len(data)} accounts",
+            )
+            metrics = [
+                ("Contract value", "contract_value"),
+                ("Product events, last 7 days", "events_last_7d"),
+                ("Product events, last 30 days", "events_last_30d"),
+                ("Product events, last 90 days", "events_last_90d"),
+                ("Support tickets, last 30 days", "support_tickets_last_30d"),
+            ]
+            rows = (
+                '<div class="cmp-row head"><span>Metric</span><span class="num">This account</span>'
+                '<span class="num">Typical</span><span class="cmp-diff">Difference</span></div>'
+            )
+            for label, col in metrics:
+                value, norm = selected_row[col], typical[col]
+                change = value / norm - 1 if norm else 0
+                diff = (
+                    "About the same" if abs(change) < 0.1
+                    else f"{value / norm:.1f}× typical" if change >= 1
+                    else f"{abs(change):.0%} {'higher' if change > 0 else 'lower'}"
+                )
+                rows += (
+                    f'<div class="cmp-row"><span class="cmp-label">{label}</span>'
+                    f'<span class="num">{fmt_metric(col, value)}</span>'
+                    f'<span class="num muted">{fmt_metric(col, norm)}</span>'
+                    f'<span class="cmp-diff">{diff}</span></div>'
+                )
+            st.markdown(rows, unsafe_allow_html=True)
+
+        # ---- technical detail (for analysts) ----
+        st.markdown(
+            '<div class="section-label" style="margin-top:22px">For analysts</div>',
+            unsafe_allow_html=True,
+        )
+        with card("dd_waterfall"):
+            section_heading(
+                "SHAP waterfall",
+                "Starts at the model's expected value E[f(x)] and adds each feature's SHAP value "
+                "(red raises, blue lowers) to reach this account's predicted probability f(x). "
+                "The plan appears here as three one-hot tier features.",
             )
             plt.figure()
             shap.plots.waterfall(explanation[position], show=False)

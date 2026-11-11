@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Northstar">
+  <defs>
+    <linearGradient id="ns-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#dc2626"/>
+      <stop offset="1" stop-color="#7f1d1d"/>
+    </linearGradient>
+    <radialGradient id="ns-glow" cx="0.5" cy="0.47" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#ns-bg)"/>
+  <circle cx="32" cy="30" r="22" fill="url(#ns-glow)"/>
+  <!-- diagonal rays: the faint secondary star -->
+  <path d="M32 30 L45 17 L34.2 32.2 Z M32 30 L45 43 L29.8 32.2 Z M32 30 L19 43 L29.8 27.8 Z M32 30 L19 17 L34.2 27.8 Z"
+        fill="#ffffff" fill-opacity="0.38"/>
+  <!-- main star: long north ray points the way -->
+  <path d="M32 5 L35.4 26.6 L52 30 L35.4 33.4 L32 54 L28.6 33.4 L12 30 L28.6 26.6 Z" fill="#ffffff"/>
+  <circle cx="32" cy="30" r="2.6" fill="#b91c1c"/>
+</svg>
